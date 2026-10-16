@@ -474,8 +474,8 @@ git push origin feature/your-feature-name
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for full terms.
 
 ```
-MIT License — © 2026 NIELIT ROPAR
-Free to use, modify, and distribute with attribution.
+MIT License — free to use, modify, and distribute with attribution.
+Maintained by LionCreate.
 ```
 
 ---
@@ -492,14 +492,10 @@ Free to use, modify, and distribute with attribution.
 <tr>
 <td align="center" width="300">
 
-### 👨‍💻 Lovnish Verma
-**Mentor & Project Engineer at NIELIT Ropar**
+### 🦁 LionCreate
+**Custom Software Development**
 
-*NIELIT Ropar*
-
-A heartfelt thanks to **Lovnish Verma Sir** for his invaluable mentorship, technical guidance, and continuous support throughout the development of this project. His expertise in full-stack development, encouragement during challenging phases, and vision for building real-world impactful applications made MechanicGo possible.
-
-🔗 [GitHub](https://github.com/lovnishverma) &nbsp;·&nbsp; [LinkedIn](https://linkedin.com/in/lovnishverma)
+*LionCreate builds ready-to-demo platforms for roadside assistance, taxi, delivery and on-demand services. This MechanicGo demo is part of the LionCreate demo library.*
 
 </td>
 </tr>
@@ -525,7 +521,7 @@ A heartfelt thanks to **Lovnish Verma Sir** for his invaluable mentorship, techn
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=ff5c2b&height=120&section=footer" width="100%"/>
 
-**Made with ❤️ at NIELIT Ropar**
+**LionCreate Demo Library**
 
 *If this project helped you, please consider giving it a ⭐ on GitHub!*
 
