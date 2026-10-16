@@ -1,0 +1,23 @@
+{
+  "name": "MechanicGo - Roadside Assistance",
+  "short_name": "MechanicGo",
+  "description": "24/7 Mobile Mechanic & Roadside Assistance Platform",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#f97316",
+  "icons": [
+    {
+      "src": "/static/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, send_from_directory
 from flask_cors import CORS
 from database import get_db, init_db
 from functools import wraps
@@ -61,6 +61,19 @@ def mechanic_portal():
 @app.route('/admin')
 def admin_portal():
     return render_template('admin.html')
+
+# ─── PWA ─────────────────────────────────────────────────────────────────────
+
+@app.route('/manifest.json')
+def pwa_manifest():
+    return send_from_directory('.', 'manifest.json', mimetype='application/manifest+json')
+
+@app.route('/sw.js')
+def service_worker():
+    resp = send_from_directory('.', 'sw.js', mimetype='application/javascript')
+    resp.headers['Cache-Control'] = 'no-cache'
+    resp.headers['Service-Worker-Allowed'] = '/'
+    return resp
 
 # ─── Auth API ─────────────────────────────────────────────────────────────────
 
