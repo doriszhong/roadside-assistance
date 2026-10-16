@@ -1,0 +1,8 @@
+flask>=3.0.0
+flask-cors>=4.0.0
+python-dotenv>=1.0.0
+gunicorn>=21.0.0
+# Only needed when connecting to an external MySQL (set DB_HOST env var):
+# mysql-connector-python>=8.3.0
+# Not imported anywhere in the code:
+# firebase-admin>=6.4.0
