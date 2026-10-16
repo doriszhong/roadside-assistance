@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MechanicGo — Roadside Help, Fast</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0f;
+  --surface:#13131c;
+  --border:#1e1e2e;
+  --accent:#ff5c2b;
+  --accent2:#ff8c42;
+  --text:#f0f0f5;
+  --muted:#6b6b80;
+  --success:#22c55e;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;width:100%;z-index:100;backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 2rem}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:var(--accent);letter-spacing:-0.5px}
+.logo span{color:var(--text)}
+.nav-links{display:flex;gap:2rem;align-items:center}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.9rem;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.btn{padding:.6rem 1.4rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.9rem;cursor:pointer;transition:all .2s;border:none;font-weight:500}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;padding:0 2rem;padding-top:64px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-20%;left:-10%;width:70%;height:70%;background:radial-gradient(ellipse,rgba(255,92,43,.12) 0%,transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-10%;right:-5%;width:50%;height:50%;background:radial-gradient(ellipse,rgba(255,140,66,.08) 0%,transparent 70%);pointer-events:none}
+.hero-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;width:100%}
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,92,43,.1);border:1px solid rgba(255,92,43,.3);border-radius:100px;padding:.4rem 1rem;font-size:.8rem;color:var(--accent);margin-bottom:1.5rem}
+.hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+h1{font-family:'Syne',sans-serif;font-size:clamp(2.5rem,5vw,4.2rem);font-weight:800;line-height:1.05;letter-spacing:-2px;margin-bottom:1.5rem}
+h1 .highlight{color:var(--accent)}
+.hero-desc{color:var(--muted);font-size:1.1rem;line-height:1.7;max-width:480px;margin-bottom:2.5rem}
+.hero-cta{display:flex;gap:1rem;flex-wrap:wrap}
+.hero-cta .btn{padding:.85rem 2rem;font-size:1rem}
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3rem;padding-top:3rem;border-top:1px solid var(--border)}
+.stat .num{font-family:'Syne',sans-serif;font-size:2rem;font-weight:700;color:var(--accent)}
+.stat p{color:var(--muted);font-size:.85rem;margin-top:.25rem}
+
+/* MOCK PHONE */
+.phone-mockup{position:relative;display:flex;justify-content:center}
+.phone-frame{width:280px;height:560px;background:var(--surface);border:2px solid var(--border);border-radius:40px;padding:1rem;position:relative;box-shadow:0 40px 80px rgba(0,0,0,.6);overflow:hidden}
+.phone-frame::before{content:'';position:absolute;top:1rem;left:50%;transform:translateX(-50%);width:80px;height:6px;background:var(--border);border-radius:4px}
+.phone-screen{background:var(--bg);border-radius:28px;height:100%;padding:2rem 1rem 1rem;display:flex;flex-direction:column;gap:.75rem;overflow:hidden}
+.phone-map{background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:16px;height:200px;position:relative;overflow:hidden}
+.phone-map::after{content:'📍';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2rem;animation:bounce 2s infinite}
+@keyframes bounce{0%,100%{transform:translate(-50%,-60%)}50%{transform:translate(-50%,-50%)}}
+.map-dot{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--accent);animation:ping 2s infinite}
+.map-dot::before{content:'';position:absolute;inset:-4px;border-radius:50%;background:rgba(255,92,43,.3);animation:ping 2s infinite .3s}
+@keyframes ping{0%{transform:scale(1);opacity:1}100%{transform:scale(2);opacity:0}}
+.sos-btn-phone{background:var(--accent);color:#fff;border:none;border-radius:14px;padding:1rem;font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;cursor:pointer;letter-spacing:1px}
+.status-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:.85rem;display:flex;align-items:center;gap:.75rem}
+.status-icon{width:36px;height:36px;border-radius:10px;background:rgba(34,197,94,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.status-text strong{font-size:.85rem;display:block}
+.status-text span{font-size:.75rem;color:var(--muted)}
+.glow-ring{position:absolute;width:320px;height:320px;border-radius:50%;border:1px solid rgba(255,92,43,.15);top:50%;left:50%;transform:translate(-50%,-50%);animation:rotate 20s linear infinite}
+.glow-ring::before{content:'';position:absolute;inset:20px;border-radius:50%;border:1px solid rgba(255,92,43,.08)}
+@keyframes rotate{to{transform:translate(-50%,-50%) rotate(360deg)}}
+
+/* FEATURES */
+.section{padding:6rem 2rem}
+.section-inner{max-width:1200px;margin:0 auto}
+.section-tag{font-size:.8rem;text-transform:uppercase;letter-spacing:3px;color:var(--accent);margin-bottom:1rem}
+.section-title{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,3vw,3rem);font-weight:700;letter-spacing:-1px;margin-bottom:1rem}
+.section-sub{color:var(--muted);font-size:1rem;line-height:1.7;max-width:520px;margin-bottom:3rem}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem}
+.feature-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;transition:all .3s;position:relative;overflow:hidden}
+.feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity .3s}
+.feature-card:hover{border-color:rgba(255,92,43,.3);transform:translateY(-4px)}
+.feature-card:hover::before{opacity:1}
+.feat-icon{width:52px;height:52px;border-radius:14px;background:rgba(255,92,43,.12);border:1px solid rgba(255,92,43,.2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:1.25rem}
+.feature-card h3{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:.75rem}
+.feature-card p{color:var(--muted);font-size:.9rem;line-height:1.6}
+
+/* HOW IT WORKS */
+.how-section{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2rem;position:relative}
+.steps::before{content:'';position:absolute;top:2rem;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--border),var(--border),transparent)}
+.step{text-align:center;position:relative}
+.step-num{width:60px;height:60px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--accent);margin:0 auto 1.5rem;position:relative;z-index:1}
+.step h3{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:.5rem}
+.step p{color:var(--muted);font-size:.85rem;line-height:1.6}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.active{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:2.5rem;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;position:relative;animation:slideUp .3s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.modal-close{position:absolute;top:1.25rem;right:1.25rem;background:none;border:none;color:var(--muted);font-size:1.5rem;cursor:pointer;line-height:1}
+.modal-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;margin-bottom:.5rem}
+.modal-sub{color:var(--muted);font-size:.9rem;margin-bottom:2rem}
+.form-group{margin-bottom:1.25rem}
+.form-group label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:.5rem}
+.form-group input,
+.form-group select,
+.form-group textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.95rem;transition:border .2s;outline:none}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus{border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:80px}
+.form-group select option{background:var(--surface)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.tab-switch{display:flex;background:var(--bg);border-radius:10px;padding:.25rem;gap:.25rem;margin-bottom:2rem}
+.tab-btn{flex:1;padding:.65rem;border:none;border-radius:8px;background:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.9rem;cursor:pointer;transition:all .2s}
+.tab-btn.active{background:var(--accent);color:#fff;font-weight:500}
+.alert{padding:.85rem 1rem;border-radius:10px;font-size:.85rem;margin-bottom:1.25rem;display:none}
+.alert.success{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--success);display:block}
+.alert.error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#ef4444;display:block}
+
+/* FOOTER */
+footer{padding:3rem 2rem;border-top:1px solid var(--border);text-align:center;color:var(--muted);font-size:.85rem}
+footer .logo-f{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--accent);margin-bottom:.75rem}
+
+/* TOAST */
+.toast-container{position:fixed;bottom:2rem;right:2rem;z-index:2000;display:flex;flex-direction:column;gap:.75rem}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;min-width:280px;box-shadow:0 8px 32px rgba(0,0,0,.4);animation:slideIn .3s ease;display:flex;align-items:flex-start;gap:.75rem}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.toast.hide{animation:slideOut .3s ease forwards}
+@keyframes slideOut{to{opacity:0;transform:translateX(20px)}}
+.toast-icon{font-size:1.2rem;flex-shrink:0}
+.toast-body strong{font-size:.9rem;display:block;margin-bottom:.2rem}
+.toast-body span{font-size:.8rem;color:var(--muted)}
+
+@media(max-width:768px){
+  .hero-inner{grid-template-columns:1fr}
+  .phone-mockup{display:none}
+  .steps::before{display:none}
+  .hero-stats{grid-template-columns:1fr 1fr}
+  .form-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="logo">Mechanic<span>Go</span></div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <button class="btn btn-outline" onclick="openModal('login')">Sign in</button>
+      <button class="btn btn-primary" onclick="openModal('register')">Get Started</button>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-badge">🔧 Live in your city</div>
+      <h1>Stranded?<br>Get a <span class="highlight">Mechanic</span><br>in Minutes.</h1>
+      <p class="hero-desc">Real-time roadside assistance at your fingertips. One tap to alert the nearest certified mechanic. We'll get you moving.</p>
+      <div class="hero-cta">
+        <button class="btn btn-primary" onclick="openModal('register')">Request Help Now</button>
+        <button class="btn btn-outline" onclick="openModal('login')">I'm a Mechanic →</button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><div class="num">2min</div><p>Avg. response time</p></div>
+        <div class="stat"><div class="num">500+</div><p>Certified mechanics</p></div>
+        <div class="stat"><div class="num">4.9★</div><p>Customer rating</p></div>
+      </div>
+    </div>
+    <div class="phone-mockup">
+      <div class="glow-ring"></div>
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="phone-map">
+            <div class="map-dot" style="top:45%;left:50%"></div>
+          </div>
+          <button class="sos-btn-phone">🚨 SOS — GET HELP</button>
+          <div class="status-card">
+            <div class="status-icon">🔧</div>
+            <div class="status-text">
+              <strong>Raj Kumar is coming</strong>
+              <span>⏱ ~8 min away · 4.9★</span>
+            </div>
+          </div>
+          <div class="status-card">
+            <div class="status-icon" style="background:rgba(255,92,43,.15)">📍</div>
+            <div class="status-text">
+              <strong>Flat Tyre</strong>
+              <span>Dispatched · NH-48</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="features">
+  <div class="section-inner">
+    <div class="section-tag">Why MechanicGo</div>
+    <h2 class="section-title">Everything you need,<br>when you need it most</h2>
+    <p class="section-sub">Built for reliability and speed. Whether it's a flat tyre at midnight or a dead battery on the highway.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feat-icon">📍</div>
+        <h3>Live GPS Tracking</h3>
+        <p>Watch your mechanic's real-time location on the map. Know exactly when they'll arrive — no more guessing.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon">⚡</div>
+        <h3>One-Tap SOS</h3>
+        <p>Press the SOS button and our system instantly locates the nearest available mechanic and dispatches them.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon">🏆</div>
+        <h3>Verified Mechanics</h3>
+        <p>Every mechanic is background-checked, certified, and rated by real customers. Quality you can trust.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon">💰</div>
+        <h3>Transparent Pricing</h3>
+        <p>See the fare estimate before you confirm. No hidden charges, no surprise bills. Pay by cash, card, or UPI.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon">🔔</div>
+        <h3>Real-Time Notifications</h3>
+        <p>Instant updates at every step — from dispatch confirmation to mechanic arrival and job completion.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon">⭐</div>
+        <h3>Rate & Review</h3>
+        <p>Help maintain quality by rating your experience. Top-rated mechanics get priority dispatch.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section how-section" id="how">
+  <div class="section-inner">
+    <div class="section-tag">Simple Process</div>
+    <h2 class="section-title" style="margin-bottom:3rem">How it works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Tap SOS</h3>
+        <p>Hit the button and share your live location automatically</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Get Matched</h3>
+        <p>Our system finds the nearest certified mechanic instantly</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Track Live</h3>
+        <p>Watch your mechanic navigate to you in real time</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <h3>Back on Road</h3>
+        <p>Problem solved. Rate your experience and you're done</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="logo-f">MechanicGo</div>
+  <p>© 2025 MechanicGo. Roadside assistance, redefined.</p>
+</footer>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+
+    <div id="loginSection">
+      <div class="modal-title">Welcome back</div>
+      <div class="modal-sub">Sign in to your MechanicGo account</div>
+      <div id="loginAlert" class="alert"></div>
+      <div class="form-group">
+        <label>Email address</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:1rem;font-size:1rem" onclick="doLogin()">Sign In</button>
+      <p style="text-align:center;margin-top:1.25rem;font-size:.85rem;color:var(--muted)">
+        No account? <a href="#" style="color:var(--accent)" onclick="openModal('register')">Register</a>
+        · <a href="/admin" style="color:var(--muted)">Admin</a>
+      </p>
+    </div>
+
+    <div id="registerSection" style="display:none">
+      <div class="modal-title">Join MechanicGo</div>
+      <div class="modal-sub">Create your account to get started</div>
+      <div id="registerAlert" class="alert"></div>
+      <div class="tab-switch">
+        <button class="tab-btn active" onclick="setReg('user',this)">🚗 Car Owner</button>
+        <button class="tab-btn" onclick="setReg('mechanic',this)">🔧 Mechanic</button>
+      </div>
+      <input type="hidden" id="regRole" value="user">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="regName" placeholder="Your name">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="regEmail" placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" id="regPhone" placeholder="+91 9999999999">
+        </div>
+      </div>
+      <div class="form-group" id="specialtyGroup" style="display:none">
+        <label>Specialty</label>
+        <select id="regSpecialty">
+          <option>General Repair</option>
+          <option>Tyre & Puncture</option>
+          <option>Battery & Electrical</option>
+          <option>Engine & Transmission</option>
+          <option>Towing</option>
+          <option>AC & Cooling</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="regPassword" placeholder="Min 8 characters">
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:1rem;font-size:1rem" onclick="doRegister()">Create Account</button>
+      <p style="text-align:center;margin-top:1.25rem;font-size:.85rem;color:var(--muted)">
+        Have an account? <a href="#" style="color:var(--accent)" onclick="openModal('login')">Sign in</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+function openModal(mode){
+  document.getElementById('authModal').classList.add('active');
+  if(mode==='login'){
+    document.getElementById('loginSection').style.display='block';
+    document.getElementById('registerSection').style.display='none';
+  } else {
+    document.getElementById('loginSection').style.display='none';
+    document.getElementById('registerSection').style.display='block';
+  }
+}
+function closeModal(){document.getElementById('authModal').classList.remove('active')}
+document.getElementById('authModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal()})
+
+function setReg(role,btn){
+  document.getElementById('regRole').value=role;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('specialtyGroup').style.display=role==='mechanic'?'block':'none';
+}
+
+function showAlert(id,type,msg){
+  const el=document.getElementById(id);
+  el.className='alert '+type;
+  el.textContent=msg;
+}
+
+async function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const password=document.getElementById('loginPassword').value;
+  if(!email||!password)return showAlert('loginAlert','error','Please fill all fields');
+  try{
+    const res=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    const data=await res.json();
+    if(!res.ok)return showAlert('loginAlert','error',data.error||'Login failed');
+    localStorage.setItem('mg_token',data.token);
+    localStorage.setItem('mg_user',JSON.stringify(data.user));
+    toast('success','Logged in!',`Welcome back, ${data.user.name}`);
+    setTimeout(()=>{
+      if(data.user.role==='mechanic')window.location.href='/mechanic';
+      else if(data.user.role==='admin')window.location.href='/admin';
+      else window.location.href='/dashboard';
+    },800);
+  }catch(e){showAlert('loginAlert','error','Network error')}
+}
+
+async function doRegister(){
+  const name=document.getElementById('regName').value.trim();
+  const email=document.getElementById('regEmail').value.trim();
+  const phone=document.getElementById('regPhone').value.trim();
+  const password=document.getElementById('regPassword').value;
+  const role=document.getElementById('regRole').value;
+  const specialty=document.getElementById('regSpecialty').value;
+  if(!name||!email||!password)return showAlert('registerAlert','error','Please fill all required fields');
+  if(password.length<8)return showAlert('registerAlert','error','Password must be at least 8 characters');
+  try{
+    const res=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,phone,password,role,specialty})});
+    const data=await res.json();
+    if(!res.ok)return showAlert('registerAlert','error',data.error||'Registration failed');
+    showAlert('registerAlert','success','Account created! Signing you in...');
+    setTimeout(()=>doAutoLogin(email,password),1000);
+  }catch(e){showAlert('registerAlert','error','Network error')}
+}
+
+async function doAutoLogin(email,password){
+  const res=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+  const data=await res.json();
+  if(res.ok){
+    localStorage.setItem('mg_token',data.token);
+    localStorage.setItem('mg_user',JSON.stringify(data.user));
+    if(data.user.role==='mechanic')window.location.href='/mechanic';
+    else window.location.href='/dashboard';
+  }
+}
+
+function toast(type,title,msg){
+  const icons={success:'✅',error:'❌',info:'ℹ️',warning:'⚠️'};
+  const el=document.createElement('div');
+  el.className='toast';
+  el.innerHTML=`<div class="toast-icon">${icons[type]||'ℹ️'}</div><div class="toast-body"><strong>${title}</strong><span>${msg}</span></div>`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(()=>{el.classList.add('hide');setTimeout(()=>el.remove(),300)},4000);
+}
+
+// Redirect if already logged in
+const savedUser=localStorage.getItem('mg_user');
+if(savedUser){
+  const u=JSON.parse(savedUser);
+  const loginBtn=document.querySelector('.btn-outline');
+  if(loginBtn){
+    loginBtn.textContent=u.name;
+    loginBtn.onclick=()=>window.location.href=u.role==='mechanic'?'/mechanic':'/dashboard';
+  }
+}
+</script>
+</body>
+</html>

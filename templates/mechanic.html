@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MechanicGo — Mechanic Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#080c10;--surface:#0f1318;--surface2:#161c22;--border:#1c2228;--accent:#00d4aa;--accent2:#00b894;--text:#e8f4f0;--muted:#5a7268;--success:#00d4aa;--warning:#f39c12;--danger:#e74c3c;--orange:#ff5c2b}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;min-height:100vh}
+
+.sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 0;position:fixed;top:0;bottom:0;left:0;z-index:50}
+.sidebar-logo{padding:0 1.5rem 1.5rem;border-bottom:1px solid var(--border)}
+.logo-main{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:var(--accent)}
+.logo-sub{font-size:.75rem;color:var(--muted);margin-top:.2rem}
+.sidebar-nav{flex:1;padding:1rem 0;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:.85rem;padding:.7rem 1.5rem;color:var(--muted);text-decoration:none;font-size:.9rem;cursor:pointer;transition:all .2s;border-left:3px solid transparent}
+.nav-item:hover{color:var(--text);background:var(--surface2)}
+.nav-item.active{color:var(--accent);border-color:var(--accent);background:rgba(0,212,170,.06)}
+.sidebar-user{padding:1.25rem 1.5rem;border-top:1px solid var(--border)}
+.avatar{width:36px;height:36px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:#000;flex-shrink:0}
+.user-pill{display:flex;align-items:center;gap:.75rem}
+.user-info strong{display:block;font-size:.85rem}
+.user-info span{color:var(--muted);font-size:.75rem}
+.logout-btn{margin-top:.75rem;background:none;border:1px solid var(--border);color:var(--muted);padding:.5rem 1rem;border-radius:8px;cursor:pointer;font-size:.8rem;width:100%;transition:all .2s}
+.logout-btn:hover{border-color:var(--danger);color:var(--danger)}
+
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{padding:1.25rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface)}
+.topbar-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700}
+.content{padding:2rem;flex:1}
+
+.tab-page{display:none}
+.tab-page.active{display:block}
+
+/* AVAILABILITY TOGGLE */
+.avail-toggle{display:flex;align-items:center;gap:1rem}
+.toggle-label{font-size:.85rem;color:var(--muted)}
+.toggle{position:relative;width:52px;height:28px;cursor:pointer}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:var(--surface2);border:1px solid var(--border);border-radius:100px;transition:.3s}
+.slider::before{content:'';position:absolute;width:20px;height:20px;left:3px;bottom:3px;background:var(--muted);border-radius:50%;transition:.3s}
+input:checked + .slider{background:rgba(0,212,170,.2);border-color:var(--accent)}
+input:checked + .slider::before{transform:translateX(24px);background:var(--accent)}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:1.75rem;margin-bottom:1.5rem}
+.card-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:2rem}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem}
+.stat-card .label{font-size:.8rem;color:var(--muted);margin-bottom:.5rem}
+.stat-card .value{font-family:'Syne',sans-serif;font-size:2rem;font-weight:700;color:var(--accent)}
+.stat-card .sub{font-size:.75rem;color:var(--muted);margin-top:.25rem}
+
+/* REQUEST CARDS */
+.req-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:1.25rem;margin-bottom:1rem;transition:border .2s}
+.req-card:hover{border-color:rgba(0,212,170,.2)}
+.req-card.new-req{border-color:rgba(0,212,170,.4);box-shadow:0 0 20px rgba(0,212,170,.08)}
+.req-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+.req-issue{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700}
+.badge{padding:.3rem .75rem;border-radius:100px;font-size:.75rem;font-weight:500}
+.badge-new{background:rgba(0,212,170,.12);color:var(--accent);border:1px solid rgba(0,212,170,.3);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.badge-searching{background:rgba(243,156,18,.12);color:var(--warning);border:1px solid rgba(243,156,18,.3)}
+.badge-completed{background:rgba(0,212,170,.12);color:var(--accent);border:1px solid rgba(0,212,170,.3)}
+.badge-cancelled{background:rgba(231,76,60,.12);color:var(--danger);border:1px solid rgba(231,76,60,.3)}
+.badge-in_progress{background:rgba(168,85,247,.12);color:#c084fc;border:1px solid rgba(168,85,247,.3)}
+.req-meta{font-size:.8rem;color:var(--muted);display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem}
+.req-actions{display:flex;gap:.5rem}
+.btn{padding:.6rem 1.2rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;cursor:pointer;transition:all .2s;border:none;font-weight:500}
+.btn-primary{background:var(--accent);color:#000}
+.btn-primary:hover{background:var(--accent2)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:transparent;border:1px solid rgba(231,76,60,.3);color:var(--danger)}
+.btn-danger:hover{background:rgba(231,76,60,.1)}
+
+/* EARNINGS */
+.earnings-card{background:linear-gradient(135deg,rgba(0,212,170,.1),rgba(0,212,170,.03));border:1px solid rgba(0,212,170,.2);border-radius:20px;padding:2rem;margin-bottom:1.5rem}
+.earnings-amount{font-family:'Syne',sans-serif;font-size:3rem;font-weight:800;color:var(--accent)}
+.earnings-amount span{font-size:1.5rem;vertical-align:super;font-size:1.2rem}
+
+/* LOCATION */
+.loc-card{display:flex;align-items:center;gap:1rem;padding:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:12px;margin-bottom:1rem}
+.loc-icon{font-size:1.5rem}
+.loc-text strong{display:block;font-size:.9rem}
+.loc-text span{font-size:.8rem;color:var(--muted)}
+.btn-update-loc{margin-left:auto;background:transparent;border:1px solid rgba(0,212,170,.3);color:var(--accent);padding:.5rem 1rem;border-radius:8px;cursor:pointer;font-size:.8rem;transition:all .2s}
+.btn-update-loc:hover{background:rgba(0,212,170,.1)}
+
+/* TOAST */
+.toast-container{position:fixed;bottom:2rem;right:2rem;z-index:2000;display:flex;flex-direction:column;gap:.75rem}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;min-width:280px;box-shadow:0 8px 32px rgba(0,0,0,.4);animation:slideIn .3s ease;display:flex;align-items:flex-start;gap:.75rem}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.toast.hide{animation:slideOut .3s ease forwards}
+@keyframes slideOut{to{opacity:0;transform:translateX(20px)}}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-main">MechanicGo</div>
+    <div class="logo-sub">Mechanic Portal</div>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="nav-item active" onclick="showTab('home',this)"><span>🏠</span> Dashboard</a>
+    <a class="nav-item" onclick="showTab('jobs',this)"><span>📋</span> My Jobs</a>
+    <a class="nav-item" onclick="showTab('earnings',this)"><span>💰</span> Earnings</a>
+    <a class="nav-item" onclick="showTab('profile',this)"><span>👤</span> Profile</a>
+  </nav>
+  <div class="sidebar-user">
+    <div class="user-pill">
+      <div class="avatar" id="sideAvatar">M</div>
+      <div class="user-info">
+        <strong id="sideName">Mechanic</strong>
+        <span id="sideSpecialty">General</span>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topTitle">Mechanic Dashboard</div>
+    <div class="avail-toggle">
+      <span class="toggle-label" id="availLabel">Offline</span>
+      <label class="toggle">
+        <input type="checkbox" id="availToggle" onchange="toggleAvailability()">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- HOME TAB -->
+    <div class="tab-page active" id="tab-home">
+      <div class="stats-row">
+        <div class="stat-card"><div class="label">Total Jobs</div><div class="value" id="totalJobs">0</div><div class="sub">All time</div></div>
+        <div class="stat-card"><div class="label">Completed</div><div class="value" id="doneJobs">0</div><div class="sub">Successfully</div></div>
+        <div class="stat-card"><div class="label">Rating</div><div class="value" id="myRating">—</div><div class="sub">Average</div></div>
+        <div class="stat-card"><div class="label">Active</div><div class="value" id="activeJobs">0</div><div class="sub">Right now</div></div>
+      </div>
+
+      <!-- LOCATION -->
+      <div class="card">
+        <div class="card-title">My Location</div>
+        <div class="loc-card">
+          <div class="loc-icon">📍</div>
+          <div class="loc-text">
+            <strong id="locText">Detecting location...</strong>
+            <span>Share your location to receive nearby requests</span>
+          </div>
+          <button class="btn-update-loc" onclick="updateLocation()">Update</button>
+        </div>
+      </div>
+
+      <!-- INCOMING REQUESTS -->
+      <div class="card">
+        <div class="card-title">
+          Assigned Requests
+          <button class="btn btn-outline" style="padding:.4rem .8rem;font-size:.75rem" onclick="loadJobs()">↻ Refresh</button>
+        </div>
+        <div id="homeJobList"><div style="color:var(--muted);text-align:center;padding:2rem">Go online to receive requests</div></div>
+      </div>
+    </div>
+
+    <!-- JOBS TAB -->
+    <div class="tab-page" id="tab-jobs">
+      <div class="card">
+        <div class="card-title">All Jobs <button class="btn btn-outline" style="padding:.4rem .8rem;font-size:.75rem" onclick="loadJobs()">↻ Refresh</button></div>
+        <div id="allJobList"><div style="color:var(--muted);text-align:center;padding:2rem">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- EARNINGS TAB -->
+    <div class="tab-page" id="tab-earnings">
+      <div class="earnings-card">
+        <div style="font-size:.85rem;color:rgba(0,212,170,.7);margin-bottom:.5rem">Total Earnings (demo)</div>
+        <div class="earnings-amount"><span>₹</span><span id="totalEarnings">0</span></div>
+        <div style="font-size:.85rem;color:var(--muted);margin-top:.5rem">Based on <span id="earnJobs">0</span> completed jobs</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Earnings per Job</div>
+        <div id="earningsList"><div style="color:var(--muted);text-align:center;padding:2rem">No earnings data</div></div>
+      </div>
+    </div>
+
+    <!-- PROFILE TAB -->
+    <div class="tab-page" id="tab-profile">
+      <div class="card">
+        <div class="card-title">Profile & Settings</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+          <div class="form-group" style="display:flex;flex-direction:column;gap:.4rem">
+            <label style="font-size:.8rem;color:var(--muted)">Full Name</label>
+            <input type="text" id="pName" style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:.75rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none">
+          </div>
+          <div class="form-group" style="display:flex;flex-direction:column;gap:.4rem">
+            <label style="font-size:.8rem;color:var(--muted)">Email</label>
+            <input type="email" id="pEmail" disabled style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:.75rem 1rem;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none">
+          </div>
+          <div class="form-group" style="display:flex;flex-direction:column;gap:.4rem">
+            <label style="font-size:.8rem;color:var(--muted)">Phone</label>
+            <input type="tel" id="pPhone" style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:.75rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none">
+          </div>
+          <div class="form-group" style="display:flex;flex-direction:column;gap:.4rem">
+            <label style="font-size:.8rem;color:var(--muted)">Specialty</label>
+            <input type="text" id="pSpecialty" style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:.75rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none">
+          </div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:1.5rem;padding:.85rem 2rem" onclick="saveProfile()">Save Changes</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const TOKEN = localStorage.getItem('mg_token');
+const USER = JSON.parse(localStorage.getItem('mg_user')||'{}');
+if(!TOKEN||USER.role!=='mechanic'){ window.location.href='/'; }
+
+document.getElementById('sideName').textContent = USER.name||'Mechanic';
+document.getElementById('sideAvatar').textContent = (USER.name||'M')[0].toUpperCase();
+
+async function api(path,opts={}){
+  const res = await fetch(path,{...opts,headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN,...(opts.headers||{})}});
+  return res.json();
+}
+
+const titles={home:'Dashboard',jobs:'All Jobs',earnings:'Earnings',profile:'Profile'};
+function showTab(name,el){
+  document.querySelectorAll('.tab-page').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.getElementById('topTitle').textContent=titles[name]||name;
+  if(el)el.classList.add('active');
+  if(name==='jobs'||name==='home')loadJobs();
+  if(name==='earnings')loadEarnings();
+  if(name==='profile')loadProfile();
+}
+
+let userLat=null,userLon=null;
+navigator.geolocation.watchPosition(pos=>{
+  userLat=pos.coords.latitude; userLon=pos.coords.longitude;
+  document.getElementById('locText').textContent=`${userLat.toFixed(4)}, ${userLon.toFixed(4)}`;
+},()=>{document.getElementById('locText').textContent='Location unavailable';},{enableHighAccuracy:true});
+
+async function updateLocation(){
+  if(!userLat||!userLon){toast('warning','No GPS','Enable location access');return;}
+  await api('/api/mechanics/location',{method:'POST',body:JSON.stringify({lat:userLat,lon:userLon})});
+  toast('success','Updated','Location shared with server');
+}
+
+async function toggleAvailability(){
+  const chk=document.getElementById('availToggle');
+  const available=chk.checked;
+  document.getElementById('availLabel').textContent=available?'Online':'Offline';
+  await api('/api/mechanics/availability',{method:'PATCH',body:JSON.stringify({available})});
+  if(available){ await updateLocation(); toast('success','You\'re Online','You can now receive requests'); }
+  else{ toast('info','You\'re Offline','You won\'t receive new requests'); }
+}
+
+async function loadJobs(){
+  const jobs=await api('/api/requests');
+  const list=document.getElementById('homeJobList');
+  const allList=document.getElementById('allJobList');
+  if(!Array.isArray(jobs)||!jobs.length){
+    if(list)list.innerHTML='<div style="color:var(--muted);text-align:center;padding:2rem">No jobs yet. Go online and share your location.</div>';
+    if(allList)allList.innerHTML='<div style="color:var(--muted);text-align:center;padding:2rem">No jobs found</div>';
+    updateStats([]);
+    return;
+  }
+  const renderJob=j=>`
+    <div class="req-card ${j.status==='searching'?'new-req':''}">
+      <div class="req-top">
+        <span class="req-issue">🔧 ${j.issue_type||'General'}</span>
+        <span class="badge badge-${j.status}">${j.status}</span>
+      </div>
+      <div class="req-meta">
+        <span>🆔 #${j.id}</span>
+        <span>👤 ${j.user_name||'Customer'}</span>
+        ${j.user_phone?'<span>📞 '+j.user_phone+'</span>':''}
+        <span>📅 ${new Date(j.created_at).toLocaleString()}</span>
+        ${j.latitude?`<span>📍 ${parseFloat(j.latitude).toFixed(4)}, ${parseFloat(j.longitude).toFixed(4)}</span>`:''}
+      </div>
+      ${j.description?`<div style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem">${j.description}</div>`:''}
+      <div class="req-actions">
+        ${j.status==='searching'||j.status==='dispatched'?`
+          <button class="btn btn-primary" onclick="updateJobStatus(${j.id},'in_progress')">▶ Start Job</button>
+        `:''}
+        ${j.status==='in_progress'?`
+          <button class="btn btn-primary" onclick="updateJobStatus(${j.id},'completed')">✅ Mark Complete</button>
+        `:''}
+        ${['searching','dispatched','in_progress'].includes(j.status)?`
+          <button class="btn btn-danger" onclick="updateJobStatus(${j.id},'cancelled')">✕ Cancel</button>
+        `:''}
+      </div>
+    </div>
+  `;
+  const html=jobs.map(renderJob).join('');
+  if(list)list.innerHTML=html;
+  if(allList)allList.innerHTML=html;
+  updateStats(jobs);
+}
+
+function updateStats(jobs){
+  document.getElementById('totalJobs').textContent=jobs.length;
+  document.getElementById('doneJobs').textContent=jobs.filter(j=>j.status==='completed').length;
+  document.getElementById('activeJobs').textContent=jobs.filter(j=>['searching','dispatched','in_progress'].includes(j.status)).length;
+}
+
+async function updateJobStatus(id,status){
+  const data=await api('/api/requests/'+id+'/status',{method:'PATCH',body:JSON.stringify({status})});
+  if(data.message){ toast('success','Updated','Job status updated'); loadJobs(); }
+  else{ toast('error','Error',data.error||'Failed'); }
+}
+
+async function loadEarnings(){
+  const jobs=await api('/api/requests');
+  const completed=Array.isArray(jobs)?jobs.filter(j=>j.status==='completed'):[];
+  const total=completed.length*350; // demo ₹350 per job
+  document.getElementById('totalEarnings').textContent=total.toLocaleString();
+  document.getElementById('earnJobs').textContent=completed.length;
+  document.getElementById('earningsList').innerHTML=completed.length?
+    completed.map(j=>`
+      <div style="display:flex;justify-content:space-between;padding:.85rem 0;border-bottom:1px solid var(--border);font-size:.9rem">
+        <span>🔧 ${j.issue_type||'General'} — #${j.id}</span>
+        <span style="color:var(--accent);font-weight:500">₹350</span>
+      </div>
+    `).join('')
+    :'<div style="color:var(--muted);text-align:center;padding:2rem">No completed jobs</div>';
+
+  // Load mechanic rating
+  const mechs=await api('/api/mechanics');
+  const me=Array.isArray(mechs)?mechs.find(m=>m.email===USER.email):null;
+  if(me){ document.getElementById('myRating').textContent=parseFloat(me.rating||0).toFixed(1); document.getElementById('sideSpecialty').textContent=me.specialty||'General'; }
+}
+
+async function loadProfile(){
+  const user=await api('/api/auth/me');
+  document.getElementById('pName').value=user.name||'';
+  document.getElementById('pEmail').value=user.email||'';
+  document.getElementById('pPhone').value=user.phone||'';
+  const mechs=await api('/api/mechanics');
+  const me=Array.isArray(mechs)?mechs.find(m=>m.email===USER.email):null;
+  if(me)document.getElementById('pSpecialty').value=me.specialty||'';
+}
+function saveProfile(){ toast('success','Saved','Profile updated (demo)'); }
+
+async function doLogout(){
+  await api('/api/auth/logout',{method:'POST'});
+  localStorage.clear(); window.location.href='/';
+}
+
+function toast(type,title,msg){
+  const icons={success:'✅',error:'❌',info:'ℹ️',warning:'⚠️'};
+  const el=document.createElement('div');el.className='toast';
+  el.innerHTML=`<div>${icons[type]||'ℹ️'}</div><div><strong style="font-size:.9rem;display:block">${title}</strong><span style="font-size:.8rem;color:var(--muted)">${msg}</span></div>`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(()=>{el.classList.add('hide');setTimeout(()=>el.remove(),300)},4000);
+}
+
+// Auto-poll for new requests
+loadJobs();
+setInterval(loadJobs,15000);
+</script>
+</body>
+</html>

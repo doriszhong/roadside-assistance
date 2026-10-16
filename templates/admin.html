@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MechanicGo — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#06060a;--surface:#0d0d14;--surface2:#13131e;--border:#1a1a28;--accent:#7c3aed;--accent2:#9d5cf6;--text:#f0eeff;--muted:#666680;--success:#22c55e;--warning:#f59e0b;--danger:#ef4444}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;min-height:100vh}
+
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 0;position:fixed;top:0;bottom:0;left:0;z-index:50}
+.sidebar-logo{padding:0 1.25rem 1.5rem;border-bottom:1px solid var(--border)}
+.logo-main{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--accent)}
+.logo-sub{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:2px}
+.sidebar-nav{flex:1;padding:.75rem 0}
+.nav-item{display:flex;align-items:center;gap:.75rem;padding:.65rem 1.25rem;color:var(--muted);font-size:.875rem;cursor:pointer;transition:all .2s;border-left:2px solid transparent}
+.nav-item:hover{color:var(--text);background:var(--surface2)}
+.nav-item.active{color:var(--accent);border-color:var(--accent);background:rgba(124,58,237,.08)}
+.sidebar-footer{padding:1.25rem;border-top:1px solid var(--border)}
+.logout-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:.5rem;border-radius:8px;cursor:pointer;font-size:.8rem;width:100%;transition:all .2s}
+.logout-btn:hover{border-color:var(--danger);color:var(--danger)}
+
+.main{margin-left:220px;flex:1;min-height:100vh}
+.topbar{padding:1rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface)}
+.topbar-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700}
+.admin-badge{background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);color:var(--accent);padding:.3rem .75rem;border-radius:100px;font-size:.75rem}
+.content{padding:2rem}
+
+.tab-page{display:none}
+.tab-page.active{display:block}
+
+/* STATS GRID */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(124,58,237,.06)}
+.stat-label{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:.75rem}
+.stat-value{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800}
+.stat-value.green{color:var(--success)}
+.stat-value.purple{color:var(--accent)}
+.stat-value.orange{color:var(--warning)}
+.stat-sub{font-size:.75rem;color:var(--muted);margin-top:.3rem}
+
+/* CHARTS */
+.charts-row{display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;margin-bottom:2rem}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:1.5rem}
+.chart-title{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;margin-bottom:1.25rem;color:var(--text)}
+canvas{max-height:200px}
+
+/* TABLE */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:1.5rem;margin-bottom:1.5rem}
+.card-title{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between}
+table{width:100%;border-collapse:collapse}
+th{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:.6rem .75rem;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:.7rem .75rem;font-size:.85rem;border-bottom:1px solid rgba(255,255,255,.03)}
+tr:hover td{background:var(--surface2)}
+.badge{padding:.25rem .6rem;border-radius:100px;font-size:.72rem;font-weight:500}
+.badge-searching{background:rgba(245,158,11,.12);color:var(--warning)}
+.badge-completed{background:rgba(34,197,94,.12);color:var(--success)}
+.badge-cancelled{background:rgba(239,68,68,.12);color:var(--danger)}
+.badge-in_progress{background:rgba(124,58,237,.12);color:var(--accent)}
+.badge-dispatched{background:rgba(59,130,246,.12);color:#60a5fa}
+.badge-user{background:rgba(34,197,94,.1);color:var(--success)}
+.badge-mechanic{background:rgba(124,58,237,.1);color:var(--accent)}
+.badge-admin{background:rgba(239,68,68,.1);color:var(--danger)}
+.btn-xs{padding:.25rem .6rem;border-radius:6px;font-size:.75rem;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .2s}
+.btn-xs:hover{border-color:var(--danger);color:var(--danger)}
+.btn{padding:.6rem 1.2rem;border-radius:8px;font-size:.85rem;cursor:pointer;transition:all .2s;border:none;font-weight:500;font-family:'DM Sans',sans-serif}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.filter-row{display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap}
+.filter-input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.5rem .85rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;transition:border .2s}
+.filter-input:focus{border-color:var(--accent)}
+
+/* TOAST */
+.toast-container{position:fixed;bottom:2rem;right:2rem;z-index:2000;display:flex;flex-direction:column;gap:.75rem}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;min-width:280px;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:slideIn .3s ease;display:flex;gap:.75rem}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.toast.hide{animation:slideOut .3s ease forwards}
+@keyframes slideOut{to{opacity:0;transform:translateX(20px)}}
+
+@media(max-width:900px){.charts-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-main">MechanicGo</div>
+    <div class="logo-sub">Admin Console</div>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="nav-item active" onclick="showTab('overview',this)">📊 Overview</a>
+    <a class="nav-item" onclick="showTab('requests',this)">📋 All Requests</a>
+    <a class="nav-item" onclick="showTab('users',this)">👥 Users</a>
+    <a class="nav-item" onclick="showTab('mechanics',this)">🔧 Mechanics</a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="logout-btn" onclick="doLogout()">← Back to Home</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topTitle">Overview</div>
+    <div class="admin-badge">Admin</div>
+  </div>
+
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div class="tab-page active" id="tab-overview">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">Total Requests</div><div class="stat-value purple" id="sTotal">—</div><div class="stat-sub">All time</div></div>
+        <div class="stat-card"><div class="stat-label">Completed</div><div class="stat-value green" id="sCompleted">—</div><div class="stat-sub">Resolved</div></div>
+        <div class="stat-card"><div class="stat-label">Active Now</div><div class="stat-value orange" id="sActive">—</div><div class="stat-sub">In progress</div></div>
+        <div class="stat-card"><div class="stat-label">Users</div><div class="stat-value" id="sUsers">—</div><div class="stat-sub">Registered</div></div>
+        <div class="stat-card"><div class="stat-label">Mechanics</div><div class="stat-value purple" id="sMechs">—</div><div class="stat-sub"><span id="sAvailMechs">—</span> available</div></div>
+        <div class="stat-card"><div class="stat-label">Avg Rating</div><div class="stat-value green" id="sRating">—</div><div class="stat-sub">★ across all jobs</div></div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-title">Requests (Last 7 Days)</div>
+          <canvas id="weekChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Issues Breakdown</div>
+          <canvas id="issueChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- REQUESTS -->
+    <div class="tab-page" id="tab-requests">
+      <div class="card">
+        <div class="card-title">
+          All Requests
+          <button class="btn btn-outline" style="padding:.4rem .8rem;font-size:.75rem" onclick="loadRequests()">↻ Refresh</button>
+        </div>
+        <div class="filter-row">
+          <input class="filter-input" type="text" id="reqSearch" placeholder="Search by user / issue..." oninput="filterTable('reqTable',this.value)">
+          <select class="filter-input" id="reqStatus" onchange="filterByStatus()">
+            <option value="">All Status</option>
+            <option value="searching">Searching</option>
+            <option value="dispatched">Dispatched</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto">
+          <table id="reqTable">
+            <thead><tr><th>#</th><th>User</th><th>Issue</th><th>Mechanic</th><th>Status</th><th>ETA</th><th>Date</th><th>Action</th></tr></thead>
+            <tbody id="reqBody"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="tab-page" id="tab-users">
+      <div class="card">
+        <div class="card-title">All Users <button class="btn btn-outline" style="padding:.4rem .8rem;font-size:.75rem" onclick="loadUsers()">↻ Refresh</button></div>
+        <div class="filter-row">
+          <input class="filter-input" type="text" placeholder="Search users..." oninput="filterTable('userTable',this.value)">
+        </div>
+        <div style="overflow-x:auto">
+          <table id="userTable">
+            <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Joined</th><th>Action</th></tr></thead>
+            <tbody id="userBody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- MECHANICS -->
+    <div class="tab-page" id="tab-mechanics">
+      <div class="card">
+        <div class="card-title">All Mechanics <button class="btn btn-outline" style="padding:.4rem .8rem;font-size:.75rem" onclick="loadMechanics()">↻ Refresh</button></div>
+        <div style="overflow-x:auto">
+          <table id="mechTable">
+            <thead><tr><th>#</th><th>Name</th><th>Specialty</th><th>Rating</th><th>Jobs</th><th>Status</th><th>Phone</th></tr></thead>
+            <tbody id="mechBody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const TOKEN = localStorage.getItem('mg_token');
+const USER = JSON.parse(localStorage.getItem('mg_user')||'{}');
+// Admin can access even without auth for demo (just check token exists)
+
+async function api(path,opts={}){
+  const res=await fetch(path,{...opts,headers:{'Content-Type':'application/json','Authorization':'Bearer '+(TOKEN||''),...(opts.headers||{})}});
+  return res.json();
+}
+
+const titles={overview:'Overview',requests:'All Requests',users:'Users',mechanics:'Mechanics'};
+function showTab(name,el){
+  document.querySelectorAll('.tab-page').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.getElementById('topTitle').textContent=titles[name]||name;
+  if(el)el.classList.add('active');
+  if(name==='overview')loadStats();
+  if(name==='requests')loadRequests();
+  if(name==='users')loadUsers();
+  if(name==='mechanics')loadMechanics();
+}
+
+let weekChart=null, issueChart=null;
+async function loadStats(){
+  const s=await api('/api/admin/stats');
+  if(s.error){toast('error','Error',s.error);return;}
+  document.getElementById('sTotal').textContent=s.total_requests||0;
+  document.getElementById('sCompleted').textContent=s.completed||0;
+  document.getElementById('sActive').textContent=s.active||0;
+  document.getElementById('sUsers').textContent=s.total_users||0;
+  document.getElementById('sMechs').textContent=s.total_mechanics||0;
+  document.getElementById('sAvailMechs').textContent=s.available_mechanics||0;
+  document.getElementById('sRating').textContent=s.avg_rating?s.avg_rating+'★':'N/A';
+
+  // Week chart
+  const wData=s.weekly_requests||[];
+  const wCtx=document.getElementById('weekChart').getContext('2d');
+  if(weekChart)weekChart.destroy();
+  weekChart=new Chart(wCtx,{
+    type:'bar',
+    data:{
+      labels:wData.map(d=>d.day),
+      datasets:[{label:'Requests',data:wData.map(d=>d.cnt),backgroundColor:'rgba(124,58,237,.6)',borderColor:'rgba(124,58,237,1)',borderWidth:1,borderRadius:6}]
+    },
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:'#666680'},grid:{color:'#1a1a28'}},x:{ticks:{color:'#666680'},grid:{display:false}}}}
+  });
+
+  // Issue chart
+  const iData=s.by_issue_type||[];
+  const iCtx=document.getElementById('issueChart').getContext('2d');
+  if(issueChart)issueChart.destroy();
+  issueChart=new Chart(iCtx,{
+    type:'doughnut',
+    data:{
+      labels:iData.map(d=>d.issue_type),
+      datasets:[{data:iData.map(d=>d.cnt),backgroundColor:['rgba(124,58,237,.7)','rgba(0,212,170,.7)','rgba(245,158,11,.7)','rgba(239,68,68,.7)','rgba(59,130,246,.7)','rgba(168,85,247,.7)']}]
+    },
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:'#666680',font:{size:11},padding:12}}}}
+  });
+}
+
+async function loadRequests(){
+  const reqs=await api('/api/requests');
+  if(!Array.isArray(reqs)){document.getElementById('reqBody').innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem">Error loading data</td></tr>';return;}
+  document.getElementById('reqBody').innerHTML=reqs.length?reqs.map(r=>`
+    <tr>
+      <td>#${r.id}</td>
+      <td>${r.user_name||'-'}</td>
+      <td>${r.issue_type||'General'}</td>
+      <td>${r.mechanic_name||'<span style="color:var(--muted)">Unassigned</span>'}</td>
+      <td><span class="badge badge-${r.status}">${r.status}</span></td>
+      <td>${r.estimated_arrival?r.estimated_arrival+'min':'—'}</td>
+      <td>${new Date(r.created_at).toLocaleDateString()}</td>
+      <td>
+        <select style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:.2rem .4rem;font-size:.75rem;cursor:pointer" onchange="changeStatus(${r.id},this.value)">
+          <option value="">Change</option>
+          <option value="searching">Searching</option>
+          <option value="dispatched">Dispatched</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Complete</option>
+          <option value="cancelled">Cancel</option>
+        </select>
+      </td>
+    </tr>
+  `).join(''):'<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem">No requests found</td></tr>';
+}
+
+async function changeStatus(id,status){
+  if(!status)return;
+  const data=await api('/api/requests/'+id+'/status',{method:'PATCH',body:JSON.stringify({status})});
+  if(data.message){toast('success','Updated','Status changed to '+status);loadRequests();}
+  else toast('error','Error',data.error||'Failed');
+}
+
+async function loadUsers(){
+  const users=await api('/api/admin/users');
+  if(!Array.isArray(users)){document.getElementById('userBody').innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">Error</td></tr>';return;}
+  document.getElementById('userBody').innerHTML=users.length?users.map(u=>`
+    <tr>
+      <td>#${u.id}</td>
+      <td>${u.name}</td>
+      <td>${u.email}</td>
+      <td>${u.phone||'—'}</td>
+      <td><span class="badge badge-${u.role}">${u.role}</span></td>
+      <td>${new Date(u.created_at).toLocaleDateString()}</td>
+      <td><button class="btn-xs" onclick="deleteUser(${u.id},'${u.name}')">🗑 Delete</button></td>
+    </tr>
+  `).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">No users</td></tr>';
+}
+
+async function deleteUser(id,name){
+  if(!confirm(`Delete user "${name}"? This cannot be undone.`))return;
+  const data=await api('/api/admin/users/'+id,{method:'DELETE'});
+  if(data.message){toast('success','Deleted','User removed');loadUsers();}
+  else toast('error','Error',data.error||'Failed');
+}
+
+async function loadMechanics(){
+  const mechs=await api('/api/mechanics');
+  if(!Array.isArray(mechs)){document.getElementById('mechBody').innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">Error</td></tr>';return;}
+  document.getElementById('mechBody').innerHTML=mechs.length?mechs.map(m=>`
+    <tr>
+      <td>#${m.id}</td>
+      <td>${m.name}</td>
+      <td>${m.specialty||'General'}</td>
+      <td>${m.rating?'⭐ '+parseFloat(m.rating).toFixed(1):'—'}</td>
+      <td>${m.total_jobs||0}</td>
+      <td><span class="badge ${m.is_available?'badge-completed':'badge-cancelled'}">${m.is_available?'Available':'Busy'}</span></td>
+      <td>${m.phone||'—'}</td>
+    </tr>
+  `).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">No mechanics</td></tr>';
+}
+
+function filterTable(tableId,query){
+  const tbl=document.getElementById(tableId);
+  const rows=tbl.querySelectorAll('tbody tr');
+  const q=query.toLowerCase();
+  rows.forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(q)?'':'none'});
+}
+
+function filterByStatus(){
+  const status=document.getElementById('reqStatus').value.toLowerCase();
+  const rows=document.querySelectorAll('#reqTable tbody tr');
+  rows.forEach(r=>{r.style.display=!status||r.textContent.toLowerCase().includes(status)?'':'none'});
+}
+
+function doLogout(){localStorage.clear();window.location.href='/';}
+
+function toast(type,title,msg){
+  const icons={success:'✅',error:'❌',info:'ℹ️',warning:'⚠️'};
+  const el=document.createElement('div');el.className='toast';
+  el.innerHTML=`<div>${icons[type]||'ℹ️'}</div><div><strong style="font-size:.9rem;display:block">${title}</strong><span style="font-size:.8rem;color:var(--muted)">${msg}</span></div>`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(()=>{el.classList.add('hide');setTimeout(()=>el.remove(),300)},4000);
+}
+
+loadStats();
+</script>
+</body>
+</html>
